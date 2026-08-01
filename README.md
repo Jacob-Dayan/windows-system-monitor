@@ -39,7 +39,7 @@ It features a non-flickering, double-buffered ANSI visual dashboard monitoring C
 ## Project Structure
 
 ```text
-RAMshit/
+windows-system-monitor/
 ├── src/
 │   ├── main.cpp          # Entry point & application lifecycle loop
 │   ├── logic.hpp / .cpp  # Metric containers & state management
