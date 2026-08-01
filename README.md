@@ -7,7 +7,7 @@ It features a non-flickering, double-buffered ANSI visual dashboard monitoring C
 ![C++20](https://img.shields.io/badge/Language-C%2B%2B20-blue.svg)
 ![Compiler](https://img.shields.io/badge/Compiler-Zig%20C%2B%2B-orange.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-0078D6.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+![License](https://img.shields.io/badge/License-GPL_v3_or_later-blue.svg)
 
 ---
 
