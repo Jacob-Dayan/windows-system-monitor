@@ -1,48 +1,64 @@
-# Windows C++ System Monitor
+# Windows System Monitor
 
-A lightweight, real-time, terminal-based Windows System Monitor written in C++20 and compiled cleanly using `zig c++`. Features visual ANSI dashboards, CPU, RAM, GPU/VRAM, Storage, Network, and Process metrics.
+A lightweight, real-time, terminal-based system performance monitor for Windows, written in **C++20** and compiled using **Zig C++**.
+
+It features a non-flickering, double-buffered ANSI visual dashboard monitoring CPU, RAM, GPU, VRAM, Storage Disks, Network interfaces, and active processes.
 
 ![C++20](https://img.shields.io/badge/Language-C%2B%2B20-blue.svg)
 ![Compiler](https://img.shields.io/badge/Compiler-Zig%20C%2B%2B-orange.svg)
-![Platform](https://img.shields.io/badge/Platform-Windows%20x64-win.svg)
+![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-0078D6.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ---
 
-## Features
+## Key Features
 
-- **CPU Metrics**: Real-time total CPU utilization percentage and core count detection via Win32 `GetSystemTimes`.
-- **Memory (RAM) & Commit**: Total, used, and free RAM tracking with live sparkline history graphs (` ▂▃▄▅▆▇█`).
-- **GPU & Dedicated VRAM**: DXGI adapter detection (`IDXGIAdapter3::QueryVideoMemoryInfo`) reporting GPU model name, total VRAM, used VRAM, and VRAM load gauges.
-- **Disk & Storage**: Automatic enumeration of logical fixed and removable drives with total vs. free space utilization.
-- **Network Traffic**: Live upload and download speed calculation (KB/s, MB/s) and total bandwidth transferred.
-- **Process Manager**: Top 15 memory-consuming active processes with PIDs and working set memory usage.
-- **Flicker-Free Terminal UI**: Built using double-buffered ANSI escape codes with tabbed navigation views.
+- ⚡ **CPU Utilization**: Real-time overall CPU usage and core detection via Win32 `GetSystemTimes`.
+- 🧠 **Physical RAM & Commit Memory**: Memory load percentages, working set usage, and live sparkline memory history (` ▂▃▄▅▆▇█`).
+- 🎮 **GPU & Dedicated VRAM**: DirectX DXGI interface (`IDXGIAdapter3::QueryVideoMemoryInfo`) reporting GPU adapter model, total VRAM, used VRAM, and usage gauges.
+- 💾 **Storage Drives**: Automatic enumeration of logical fixed and removable drives with live space utilization.
+- 🌐 **Network Throughput**: Real-time download/upload speed calculation (`KB/s`, `MB/s`) and total data transferred.
+- 📊 **Process Manager**: Top 15 memory-consuming active processes sorted dynamically by memory working set.
+- 🎨 **Flicker-Free ANSI Dashboard**: Double-buffered VT100 terminal interface with tabbed views and custom update intervals.
 
 ---
 
-## Directory Structure
+## Controls & Hotkeys
+
+| Key | Action |
+| --- | --- |
+| `Tab` / `1` - `4` | Switch Tab (*Overview*, *CPU/RAM/GPU*, *Storage/Net*, *Top Processes*) |
+| `A` | Toggle High-RAM Audio Warning Beep |
+| `P` | Pause / Resume live refresh |
+| `+` / `-` | Speed up / slow down update interval (250ms - 5000ms) |
+| `R` | Force immediate refresh |
+| `Q` / `Esc` | Cleanly exit application |
+
+---
+
+## Project Structure
 
 ```text
 RAMshit/
 ├── src/
 │   ├── main.cpp          # Entry point & application lifecycle loop
-│   ├── logic.hpp / .cpp  # Data structures & application state management
-│   ├── style.hpp / .cpp  # ANSI UI rendering, gauge bars & sparkline graphs
-│   └── interaction.hpp / .cpp # Windows API, IP Helper & DXGI sampler calls
-├── build.bat             # Build script executing zig c++
+│   ├── logic.hpp / .cpp  # Metric containers & state management
+│   ├── style.hpp / .cpp  # ANSI UI layout, gauge bars & sparkline graphs
+│   └── interaction.hpp / .cpp # Win32, IP Helper & DXGI hardware samplers
+├── build.bat             # One-click build script using Zig C++
 ├── .gitignore            # Git ignore rules
 └── README.md             # Project documentation
 ```
 
 ---
 
-## Building & Running
+## Building & Installation
 
-### Requirements
-- **[Zig Compiler](https://ziglang.org/)** (v0.10.0 or newer) in your system `PATH`.
+### Prerequisites
+- **[Zig Compiler](https://ziglang.org/)** (v0.10.0 or newer) added to your system `PATH`.
 
-### Compile with Zig C++
-Double-click `build.bat` or run:
+### Compile
+Run `build.bat` or compile manually via command line:
 ```cmd
 zig c++ -O3 -std=c++20 src/main.cpp src/logic.cpp src/interaction.cpp src/style.cpp -o system_monitor.exe -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid
 ```
@@ -54,35 +70,6 @@ zig c++ -O3 -std=c++20 src/main.cpp src/logic.cpp src/interaction.cpp src/style.
 
 ---
 
-## Keyboard Controls
+## License
 
-| Key | Action |
-| --- | --- |
-| `Tab` / `1`-`4` | Switch Tab View (*Overview*, *CPU/RAM/GPU*, *Storage/Net*, *Processes*) |
-| `A` | Toggle High-RAM Audio Alert on/off |
-| `P` | Pause / Resume live refresh |
-| `+` / `-` | Speed up / slow down sampling rate (250ms - 5000ms) |
-| `R` | Force immediate refresh |
-| `Q` / `Esc` | Exit application |
-
----
-
-## Pushing to GitHub
-
-To push this repository to GitHub, follow these commands in your terminal:
-
-```bash
-# 1. Initialize Git repository
-git init
-
-# 2. Stage files and create first commit
-git add .
-git commit -m "Initial commit: Modular Windows C++ System Monitor with GPU/VRAM"
-
-# 3. Create a new repository on GitHub (github.com/new), then link it:
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-
-# 4. Push code to GitHub
-git push -u origin main
-```
+Distributed under the [MIT License](LICENSE).
