@@ -72,4 +72,4 @@ zig c++ -O3 -std=c++20 src/main.cpp src/logic.cpp src/interaction.cpp src/style.
 
 ## License
 
-Distributed under the [MIT License](LICENSE).
+Distributed under the [GPLv3 or later License](LICENSE).
