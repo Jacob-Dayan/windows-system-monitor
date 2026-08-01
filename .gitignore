@@ -1,0 +1,12 @@
+# Binary outputs
+*.exe
+*.o
+*.obj
+*.pdb
+
+# Build & System directories
+.vs/
+bin/
+build/
+.idea/
+.gemini/
