@@ -19,6 +19,8 @@
 #include <thread>
 #include <chrono>
 
+/* Notice that the windows dependencies are included in other files and not in main, but they are */
+
 #include "logic.hpp"
 #include "interaction.hpp"
 #include "style.hpp"
