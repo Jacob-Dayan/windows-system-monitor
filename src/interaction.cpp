@@ -1,16 +1,16 @@
-/* 
+/*
 	Copyright (C) 2026 S. Jacob Dayan.S
-	
+
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	GNU General Public License for more details.
-	
+
 	You should have received me a copy of the GNU General Public License
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
@@ -270,29 +270,52 @@ void WindowsInteraction::SampleProcesses(SystemMetrics& metrics) {
 }
 
 bool WindowsInteraction::PollKeyInput(MonitorState& state) {
-    if (_kbhit()) {
-        int ch = _getch();
-        if (ch == 0 || ch == 224) {
-            ch = _getch();
-        }
-
-        if (ch == 'q' || ch == 'Q' || ch == 27) {
-            state.running = false;
-        } else if (ch == '\t') {
-            state.activeTab = (state.activeTab % 4) + 1;
-        } else if (ch >= '1' && ch <= '4') {
-            state.activeTab = ch - '0';
-        } else if (ch == 'a' || ch == 'A') {
-            state.soundAlertEnabled = !state.soundAlertEnabled;
-        } else if (ch == 'p' || ch == 'P') {
-            state.isPaused = !state.isPaused;
-        } else if (ch == '+' || ch == '=') {
-            if (state.refreshIntervalMs > 250) state.refreshIntervalMs -= 250;
-        } else if (ch == '-' || ch == '_') {
-            if (state.refreshIntervalMs < 5000) state.refreshIntervalMs += 250;
-        } else if (ch == 'r' || ch == 'R') {
-            return true;
-        }
+    if (!_kbhit()) {
+        return false;
     }
-    return false;
+
+    int ch = _getch();
+    if (ch == 0 || ch == 224) {
+        ch = _getch();
+    }
+
+    switch (ch) {
+        case 'q':
+        case 'Q':
+        case 27:
+            state.running = false;
+            break;
+        case '\t':
+            state.activeTab = (state.activeTab % 4) + 1;
+            break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+            state.activeTab = ch - '0';
+            break;
+        case 'a':
+        case 'A':
+            state.soundAlertEnabled = !state.soundAlertEnabled;
+            break;
+        case 'p':
+        case 'P':
+            state.isPaused = !state.isPaused;
+            break;
+        case '+':
+        case '=':
+            if (state.refreshIntervalMs > 250) state.refreshIntervalMs -= 250;
+            break;
+        case '-':
+        case '_':
+            if (state.refreshIntervalMs < 5000) state.refreshIntervalMs += 250;
+            break;
+        case 'r':
+        case 'R':
+            return true;
+        default:
+            return false;
+    }
+
+    return true;
 }
