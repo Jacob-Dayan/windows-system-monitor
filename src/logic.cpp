@@ -1,5 +1,5 @@
 /* 
-	Copyright (C) 2026 S. Jacob Dayan.S
+	Copyright (C) 2026 Jacob Dayan
 	
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by

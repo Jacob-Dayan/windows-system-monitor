@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2026 S. Jacob Dayan.S
+	Copyright (C) 2026 Jacob Dayan
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -50,6 +50,6 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(state.refreshIntervalMs));
     }
 
-    std::cout << "\033[2J\033[HExiting System Monitor. Goodbye!\n";
+    std::cout << "\033[2J\033[HExiting System Monitor.\n";
     return 0;
 }
