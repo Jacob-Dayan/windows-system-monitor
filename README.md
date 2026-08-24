@@ -1,38 +1,38 @@
 # Windows System Monitor
 
-A lightweight, real-time, terminal-based system performance monitor for Windows, written in **C++20**.
+A lightweight, real-time terminal system monitor for Windows, written in **C++20**.
 
-It features a non-flickering, double-buffered ANSI visual dashboard monitoring CPU, RAM, GPU, VRAM, Storage Disks, Network interfaces, and active processes.
+Displays system metrics through a double-buffered, flicker-free ANSI terminal interface with tabbed views for CPU, memory, GPU/VRAM, storage, network traffic, and active processes.
 
-![C++20](https://img.shields.io/badge/Language-C%2B%2B20-blue.svg)
-![Compiler](https://img.shields.io/badge/Compiler-Zig%20C%2B%2B-orange.svg) or ![GCC](https://img.shields.io/badge/Compiler-GCC-blue.svg)
-![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-0078D6.svg)
+![Language](https://img.shields.io/badge/Language-C%2B%2B20-blue.svg)
+![Compilers](https://img.shields.io/badge/Compilers-GCC%20%7C%20Clang-green.svg)
+![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20x64-0078D6.svg)
 ![License](https://img.shields.io/badge/License-GPL_v3_or_later-blue.svg)
 
 ---
 
-## Key Features
+## Features
 
--  **CPU Utilization**: Real-time overall CPU usage and core detection via Win32 `GetSystemTimes`.
--  **Physical RAM & Commit Memory**: Memory load percentages, working set usage, and live sparkline memory history (` ▂▃▄▅▆▇█`).
--  **GPU & Dedicated VRAM**: DirectX DXGI interface (`IDXGIAdapter3::QueryVideoMemoryInfo`) reporting GPU adapter model, total VRAM, used VRAM, and usage gauges.
--  **Storage Drives**: Automatic enumeration of logical fixed and removable drives with live space utilization.
--  **Network Throughput**: Real-time download/upload speed calculation (`KB/s`, `MB/s`) and total data transferred.
--  **Process Manager**: Top 15 memory-consuming active processes sorted dynamically by memory working set.
--  **Flicker-Free ANSI Dashboard**: Double-buffered VT100 terminal interface with tabbed views and custom update intervals.
+- **CPU Metrics**: Overall CPU utilization calculation via `GetSystemTimes` and physical core count enumeration.
+- **Physical RAM & Commit Memory**: Real-time load percentages, working set usage, and live sparkline memory history (` ▂▃▄▅▆▇█`).
+- **GPU & Dedicated VRAM**: Hardware adapter detection and dedicated video memory usage via DirectX DXGI (`IDXGIAdapter3::QueryVideoMemoryInfo`).
+- **Storage Drives**: Automatic enumeration of fixed and removable logical drives with capacity and usage bars.
+- **Network Throughput**: Real-time download/upload rate calculation (KB/s, MB/s) and total data transfer using the IP Helper API.
+- **Process List**: Top 15 memory-consuming processes sorted dynamically by working set size.
+- **TUI Dashboard**: Double-buffered VT100 / ANSI escape sequence rendering with adjustable refresh rates (250ms–5000ms).
 
 ---
 
-## Controls & Hotkeys
+## Keybinds
 
 | Key | Action |
 | --- | --- |
-| `Tab` / `1` - `4` | Switch Tab (*Overview*, *CPU/RAM/GPU*, *Storage/Net*, *Top Processes*) |
-| `A` | Toggle High-RAM Audio Warning Beep |
-| `P` | Pause / Resume live refresh |
-| `+` / `-` | Speed up / slow down update interval (250ms - 5000ms) |
+| `Tab` / `1`–`4` | Switch view (*1: Overview*, *2: CPU/RAM/GPU*, *3: Storage/Net*, *4: Top Processes*) |
+| `A` | Toggle audio beep warning on high RAM usage |
+| `P` | Pause / resume metric polling |
+| `+` / `-` | Increase / decrease refresh interval (250ms – 5000ms) |
 | `R` | Force immediate refresh |
-| `Q` / `Esc` | Cleanly exit application |
+| `Q` / `Esc` | Exit application |
 
 ---
 
@@ -41,31 +41,72 @@ It features a non-flickering, double-buffered ANSI visual dashboard monitoring C
 ```text
 windows-system-monitor/
 ├── src/
-│   ├── main.cpp          # Entry point & application lifecycle loop
-│   ├── logic.hpp / .cpp  # Metric containers & state management
-│   ├── style.hpp / .cpp  # ANSI UI layout, gauge bars & sparkline graphs
-│   └── interaction.hpp / .cpp # Win32, IP Helper & DXGI hardware samplers
-├── build/
-│   ├── build_g++.bat     # One-click build script using GCC
-│   └── build_zig.bat     # One-click build script using Zig C++
-├── .gitignore            # Git ignore rules
-└── README.md             # Project documentation
+│   ├── main.cpp               # Entry point and application event loop
+│   ├── logic.hpp / .cpp       # Metric data structures and state handling
+│   ├── style.hpp / .cpp       # ANSI UI renderer, gauge bars, and sparklines
+│   └── interaction.hpp / .cpp # Win32, IP Helper, and DXGI hardware samplers
+├── build_scripts/
+│   ├── build_g++.bat          # Windows build script using G++
+│   ├── build_clang.bat        # Windows build script using Clang++
+│   └── build_zig.bat          # Alternative build script using Zig C++
+├── CMakeLists.txt             # CMake project configuration
+├── Makefile                   # Makefile for GNU Make / MinGW
+├── .gitignore                 # Git ignore rules
+└── README.md                  # Documentation
 ```
 
 ---
 
-## Building & Installation
+## Building
 
-### Prerequisites
-- **[Zig Compiler](https://ziglang.org/)** (v0.10.0 or newer) added to your system `PATH`, or **[GCC](https://gcc.gnu.org/)** (v11 or newer).
+### Requirements
+- **Windows 10 / 11 (x64)**
+- **G++ (MinGW-w64)** 11.0+ or **Clang** 14.0+ with C++20 support
+- Terminal with ANSI / VT100 escape code support (e.g., Windows Terminal, PowerShell, ConEmu)
 
-### Compile
-Run `build/build_g++.bat` or `build/build_zig.bat` or compile manually via command line:
+### One-Click Build Scripts
+
+Run either batch script from `build_scripts/`:
+
 ```cmd
-zig c++ -O3 -std=c++20 src/main.cpp src/logic.cpp src/interaction.cpp src/style.cpp -o system_monitor.exe -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid
+.\build_scripts\build_g++.bat
+```
+*or*
+```cmd
+.\build_scripts\build_clang.bat
 ```
 
-### Launch
+### Manual Compilation
+
+#### With G++ (MinGW-w64)
+```cmd
+g++ -O3 -std=c++20 src/main.cpp src/logic.cpp src/interaction.cpp src/style.cpp -o system_monitor.exe -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid
+```
+
+#### With Clang++
+```cmd
+clang++ -O3 -std=c++20 src/main.cpp src/logic.cpp src/interaction.cpp src/style.cpp -o system_monitor.exe -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid
+```
+
+#### With Make
+```sh
+# Defaults to g++
+make
+
+# Or specify clang++
+make CXX=clang++
+```
+
+#### With CMake
+```cmd
+cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+---
+
+## Running
+
 ```cmd
 .\system_monitor.exe
 ```
@@ -74,4 +115,4 @@ zig c++ -O3 -std=c++20 src/main.cpp src/logic.cpp src/interaction.cpp src/style.
 
 ## License
 
-Distributed under the [GPLv3 or later License](LICENSE).
+This project is licensed under the [GNU General Public License v3.0 or later](LICENSE).

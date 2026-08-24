@@ -1,13 +1,13 @@
 @echo off
-echo Building System Monitor from src/ with GCC...
+setlocal
+cd /d "%~dp0\.."
+
+echo Building system_monitor.exe with G++...
 g++ -O3 -std=c++20 src/main.cpp src/logic.cpp src/interaction.cpp src/style.cpp -o system_monitor.exe -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid
+
 if %ERRORLEVEL% EQU 0 (
-    echo.
-    echo Successfully compiled system_monitor.exe!
-    echo Run system_monitor.exe to launch.
-    echo.
+    echo Build succeeded: system_monitor.exe
 ) else (
-    echo.
-    echo Compilation failed! Please inspect error messages above.
+    echo Build failed with error code %ERRORLEVEL%.
     pause
 )
