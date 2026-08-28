@@ -1,0 +1,3 @@
+Makefile linguist-vendored
+build* linguist-vendored
+build_scripts/** linguist-vendored
