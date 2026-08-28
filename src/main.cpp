@@ -19,8 +19,6 @@
 #include <thread>
 #include <chrono>
 
-/* Notice that the windows dependencies are included in the `interaction` files, not in main */
-
 #include "logic.hpp"
 #include "interaction.hpp"
 #include "style.hpp"
@@ -29,13 +27,8 @@ int main() {
     MonitorState state;
     WindowsInteraction winApi;
 
-    // Enable Virtual Terminal / ANSI mode
     winApi.InitConsoleSettings();
-
-    // Initial Screen Clear
     std::cout << "\033[2J\033[H" << std::flush;
-
-    // Initial metrics fetch
     winApi.SampleSystemMetrics(state);
 
     while (state.running) {
@@ -46,7 +39,6 @@ int main() {
         }
 
         TerminalStyle::RenderDashboard(state);
-
         std::this_thread::sleep_for(std::chrono::milliseconds(state.refreshIntervalMs));
     }
 

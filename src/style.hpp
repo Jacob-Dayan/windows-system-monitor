@@ -15,24 +15,30 @@
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #ifndef STYLE_HPP
 #define STYLE_HPP
 
 #include <string>
 #include <vector>
+#include <iosfwd>
 #include "logic.hpp"
 
 class TerminalStyle {
 public:
-    static std::string FormatBytes(uint64_t bytes);
-    static std::string FormatSpeed(double bytesPerSec);
-    static std::string FormatUptime(uint64_t totalSec);
+    [[nodiscard]] static std::string FormatBytes(uint64_t bytes);
+    [[nodiscard]] static std::string FormatSpeed(double bytesPerSec);
+    [[nodiscard]] static std::string FormatUptime(uint64_t totalSec);
 
-    static std::string RenderProgressBar(double percent, int width = 24);
-    static std::string RenderSparkline(const std::vector<double>& history, int width = 30);
+    [[nodiscard]] static std::string RenderProgressBar(double percent, int width = 24);
+    [[nodiscard]] static std::string RenderSparkline(const std::vector<double>& history, int width = 30);
 
     static void RenderDashboard(const MonitorState& state);
+
+private:
+    static void RenderOverviewTab(std::ostream& out, const MonitorState& state);
+    static void RenderHardwareTab(std::ostream& out, const MonitorState& state);
+    static void RenderStorageNetworkTab(std::ostream& out, const MonitorState& state);
+    static void RenderProcessesTab(std::ostream& out, const MonitorState& state);
 };
 
 #endif // STYLE_HPP

@@ -15,10 +15,12 @@
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
+#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0A00
+#endif
+#ifndef WINVER
 #define WINVER 0x0A00
+#endif
 #define _GLIBCXX_PRINT_NEVER_UNICODE
 
 #include <winsock2.h>
@@ -28,12 +30,13 @@
 #include <tlhelp32.h>
 #include <conio.h>
 #include <dxgi1_4.h>
-#include <iostream>
 #include <algorithm>
+#include <vector>
+#include <cstring>
 
 #include "interaction.hpp"
 
-static uint64_t FileTimeToUint64(const FILETIME& ft) {
+static constexpr uint64_t FileTimeToUint64(const FILETIME& ft) noexcept {
     return (static_cast<uint64_t>(ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
 }
 
@@ -41,7 +44,7 @@ WindowsInteraction::WindowsInteraction() {
     lastSampleTime = std::chrono::steady_clock::now();
 }
 
-void WindowsInteraction::InitConsoleSettings() {
+void WindowsInteraction::InitConsoleSettings() noexcept {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
     if (GetConsoleMode(hOut, &dwMode)) {
@@ -50,20 +53,19 @@ void WindowsInteraction::InitConsoleSettings() {
     SetConsoleOutputCP(CP_UTF8);
 }
 
-void WindowsInteraction::TriggerAudioBeep(int frequencyHz, int durationMs) {
+void WindowsInteraction::TriggerAudioBeep(int frequencyHz, int durationMs) noexcept {
     Beep(frequencyHz, durationMs);
 }
 
 void WindowsInteraction::SampleSystemMetrics(MonitorState& state) {
-    auto now = std::chrono::steady_clock::now();
+    const auto now = std::chrono::steady_clock::now();
     double elapsedSec = std::chrono::duration<double>(now - lastSampleTime).count();
     if (elapsedSec <= 0.001) elapsedSec = 1.0;
     lastSampleTime = now;
 
-    // 1. Host Info
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);
-    state.metrics.cpuCores = sysInfo.dwNumberOfProcessors;
+    state.metrics.cpuCores = static_cast<int>(sysInfo.dwNumberOfProcessors);
 
     char hostBuffer[MAX_COMPUTERNAME_LENGTH + 1];
     DWORD hostLen = sizeof(hostBuffer);
@@ -75,42 +77,30 @@ void WindowsInteraction::SampleSystemMetrics(MonitorState& state) {
 
     state.metrics.uptimeSeconds = GetTickCount64() / 1000;
 
-    // 2. CPU
     SampleCPU(state.metrics);
-
-    // 3. RAM & Commit
     SampleRAM(state.metrics, state);
-
-    // 4. GPU & VRAM
     SampleGPU(state.metrics);
-
-    // 5. Drives
     SampleDrives(state.metrics);
-
-    // 6. Network
     SampleNetwork(state.metrics, elapsedSec);
-
-    // 7. Processes
     SampleProcesses(state.metrics);
 }
 
-void WindowsInteraction::SampleCPU(SystemMetrics& metrics) {
+void WindowsInteraction::SampleCPU(SystemMetrics& metrics) noexcept {
     FILETIME idleTime, kernelTime, userTime;
     if (GetSystemTimes(&idleTime, &kernelTime, &userTime)) {
-        uint64_t idle = FileTimeToUint64(idleTime);
-        uint64_t kernel = FileTimeToUint64(kernelTime);
-        uint64_t user = FileTimeToUint64(userTime);
+        const uint64_t idle = FileTimeToUint64(idleTime);
+        const uint64_t kernel = FileTimeToUint64(kernelTime);
+        const uint64_t user = FileTimeToUint64(userTime);
 
         if (prevKernelTime > 0) {
-            uint64_t idleDiff = idle - prevIdleTime;
-            uint64_t kernelDiff = kernel - prevKernelTime;
-            uint64_t userDiff = user - prevUserTime;
-            uint64_t totalSys = kernelDiff + userDiff;
+            const uint64_t idleDiff = idle - prevIdleTime;
+            const uint64_t kernelDiff = kernel - prevKernelTime;
+            const uint64_t userDiff = user - prevUserTime;
+            const uint64_t totalSys = kernelDiff + userDiff;
 
             if (totalSys > 0) {
-                metrics.cpuLoad = (1.0 - (static_cast<double>(idleDiff) / totalSys)) * 100.0;
-                if (metrics.cpuLoad < 0.0) metrics.cpuLoad = 0.0;
-                if (metrics.cpuLoad > 100.0) metrics.cpuLoad = 100.0;
+                const double calculatedLoad = (1.0 - (static_cast<double>(idleDiff) / static_cast<double>(totalSys))) * 100.0;
+                metrics.cpuLoad = std::clamp(calculatedLoad, 0.0, 100.0);
             }
         }
         prevIdleTime = idle;
@@ -119,7 +109,7 @@ void WindowsInteraction::SampleCPU(SystemMetrics& metrics) {
     }
 }
 
-void WindowsInteraction::SampleRAM(SystemMetrics& metrics, MonitorState& state) {
+void WindowsInteraction::SampleRAM(SystemMetrics& metrics, MonitorState& state) noexcept {
     MEMORYSTATUSEX memState{};
     memState.dwLength = sizeof(memState);
     if (GlobalMemoryStatusEx(&memState)) {
@@ -132,7 +122,7 @@ void WindowsInteraction::SampleRAM(SystemMetrics& metrics, MonitorState& state) 
         metrics.pageAvailBytes = memState.ullAvailPageFile;
         metrics.pageUsedBytes = memState.ullTotalPageFile - memState.ullAvailPageFile;
         metrics.pageLoadPercent = (memState.ullTotalPageFile > 0) ?
-            (static_cast<double>(metrics.pageUsedBytes) / memState.ullTotalPageFile) * 100.0 : 0.0;
+            (static_cast<double>(metrics.pageUsedBytes) / static_cast<double>(memState.ullTotalPageFile)) * 100.0 : 0.0;
 
         state.PushRamHistory(metrics.ramLoadPercent);
 
@@ -142,35 +132,39 @@ void WindowsInteraction::SampleRAM(SystemMetrics& metrics, MonitorState& state) 
     }
 }
 
-void WindowsInteraction::SampleGPU(SystemMetrics& metrics) {
+void WindowsInteraction::SampleGPU(SystemMetrics& metrics) noexcept {
     metrics.gpu.available = false;
     IDXGIFactory4* pFactory = nullptr;
-    if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory4), (void**)&pFactory))) {
+    if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory4), reinterpret_cast<void**>(&pFactory)))) {
         IDXGIAdapter1* pAdapter = nullptr;
         if (SUCCEEDED(pFactory->EnumAdapters1(0, &pAdapter))) {
             DXGI_ADAPTER_DESC1 desc;
             if (SUCCEEDED(pAdapter->GetDesc1(&desc))) {
                 char nameBuf[256];
-                WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, nameBuf, sizeof(nameBuf), NULL, NULL);
+                WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, nameBuf, sizeof(nameBuf), nullptr, nullptr);
                 metrics.gpu.name = nameBuf;
                 metrics.gpu.vramTotalBytes = desc.DedicatedVideoMemory;
 
                 IDXGIAdapter3* pAdapter3 = nullptr;
-                if (SUCCEEDED(pAdapter->QueryInterface(__uuidof(IDXGIAdapter3), (void**)&pAdapter3))) {
+                if (SUCCEEDED(pAdapter->QueryInterface(__uuidof(IDXGIAdapter3), reinterpret_cast<void**>(&pAdapter3)))) {
                     DXGI_QUERY_VIDEO_MEMORY_INFO info;
                     if (SUCCEEDED(pAdapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &info))) {
                         metrics.gpu.vramUsedBytes = info.CurrentUsage;
                         if (metrics.gpu.vramTotalBytes > 0) {
-                            metrics.gpu.vramUsagePercent = (static_cast<double>(info.CurrentUsage) / metrics.gpu.vramTotalBytes) * 100.0;
-                        } else if (info.Budget > 0) {
+                            metrics.gpu.vramUsagePercent = (static_cast<double>(info.CurrentUsage) / static_cast<double>(metrics.gpu.vramTotalBytes)) * 100.0;
+                        } else {
                             metrics.gpu.vramTotalBytes = info.Budget;
-                            metrics.gpu.vramUsagePercent = (static_cast<double>(info.CurrentUsage) / info.Budget) * 100.0;
+                            if (info.Budget > 0) {
+                                metrics.gpu.vramUsagePercent = (static_cast<double>(info.CurrentUsage) / static_cast<double>(info.Budget)) * 100.0;
+                            }
                         }
                         metrics.gpu.available = true;
                     }
                     pAdapter3->Release();
-                } else if (metrics.gpu.vramTotalBytes > 0) {
-                    metrics.gpu.available = true;
+                } else {
+                    if (metrics.gpu.vramTotalBytes > 0) {
+                        metrics.gpu.available = true;
+                    }
                 }
             }
             pAdapter->Release();
@@ -182,11 +176,11 @@ void WindowsInteraction::SampleGPU(SystemMetrics& metrics) {
 void WindowsInteraction::SampleDrives(SystemMetrics& metrics) {
     metrics.drives.clear();
     char driveBuffer[512];
-    DWORD len = GetLogicalDriveStringsA(sizeof(driveBuffer), driveBuffer);
+    const DWORD len = GetLogicalDriveStringsA(sizeof(driveBuffer), driveBuffer);
     if (len > 0 && len < sizeof(driveBuffer)) {
-        char* pDrive = driveBuffer;
+        const char* pDrive = driveBuffer;
         while (*pDrive) {
-            UINT type = GetDriveTypeA(pDrive);
+            const UINT type = GetDriveTypeA(pDrive);
             if (type == DRIVE_FIXED || type == DRIVE_REMOVABLE) {
                 ULARGE_INTEGER freeBytesCaller, totalBytes, totalFreeBytes;
                 if (GetDiskFreeSpaceExA(pDrive, &freeBytesCaller, &totalBytes, &totalFreeBytes)) {
@@ -197,24 +191,26 @@ void WindowsInteraction::SampleDrives(SystemMetrics& metrics) {
                     info.freeBytes = totalFreeBytes.QuadPart;
                     info.usedBytes = totalBytes.QuadPart - totalFreeBytes.QuadPart;
                     info.usagePercent = (totalBytes.QuadPart > 0) ?
-                        (static_cast<double>(info.usedBytes) / totalBytes.QuadPart) * 100.0 : 0.0;
-                    metrics.drives.push_back(info);
+                        (static_cast<double>(info.usedBytes) / static_cast<double>(totalBytes.QuadPart)) * 100.0 : 0.0;
+                    metrics.drives.push_back(std::move(info));
                 }
             }
-            pDrive += strlen(pDrive) + 1;
+            pDrive += std::strlen(pDrive) + 1;
         }
     }
 }
 
 void WindowsInteraction::SampleNetwork(SystemMetrics& metrics, double elapsedSec) {
     DWORD dwSize = 0;
-    if (GetIfTable(NULL, &dwSize, FALSE) == ERROR_INSUFFICIENT_BUFFER) {
-        MIB_IFTABLE* pIfTable = (MIB_IFTABLE*)malloc(dwSize);
-        if (pIfTable && GetIfTable(pIfTable, &dwSize, FALSE) == NO_ERROR) {
+    if (GetIfTable(nullptr, &dwSize, FALSE) == ERROR_INSUFFICIENT_BUFFER) {
+        std::vector<BYTE> buffer(dwSize);
+        auto* pIfTable = reinterpret_cast<MIB_IFTABLE*>(buffer.data());
+
+        if (GetIfTable(pIfTable, &dwSize, FALSE) == NO_ERROR) {
             uint64_t currentRx = 0;
             uint64_t currentTx = 0;
 
-            for (DWORD i = 0; i < pIfTable->dwNumEntries; i++) {
+            for (DWORD i = 0; i < pIfTable->dwNumEntries; ++i) {
                 const MIB_IFROW& row = pIfTable->table[i];
                 if (row.dwType != MIB_IF_TYPE_LOOPBACK && row.dwOperStatus == MIB_IF_OPER_STATUS_OPERATIONAL) {
                     currentRx += row.dwInOctets;
@@ -222,14 +218,13 @@ void WindowsInteraction::SampleNetwork(SystemMetrics& metrics, double elapsedSec
                 }
             }
 
-            if (metrics.net.rxBytes > 0 && elapsedSec > 0) {
+            if (metrics.net.rxBytes > 0 && elapsedSec > 0.0) {
                 metrics.net.rxSpeed = (currentRx >= metrics.net.rxBytes) ? static_cast<double>(currentRx - metrics.net.rxBytes) / elapsedSec : 0.0;
                 metrics.net.txSpeed = (currentTx >= metrics.net.txBytes) ? static_cast<double>(currentTx - metrics.net.txBytes) / elapsedSec : 0.0;
             }
             metrics.net.rxBytes = currentRx;
             metrics.net.txBytes = currentTx;
         }
-        if (pIfTable) free(pIfTable);
     }
 }
 
@@ -237,21 +232,21 @@ void WindowsInteraction::SampleProcesses(SystemMetrics& metrics) {
     metrics.topProcesses.clear();
     HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (hSnapshot != INVALID_HANDLE_VALUE) {
-        PROCESSENTRY32 pe32;
+        PROCESSENTRY32 pe32{};
         pe32.dwSize = sizeof(PROCESSENTRY32);
         if (Process32First(hSnapshot, &pe32)) {
             do {
                 if (pe32.th32ProcessID == 0) continue;
                 HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, FALSE, pe32.th32ProcessID);
                 if (hProc) {
-                    PROCESS_MEMORY_COUNTERS pmc;
+                    PROCESS_MEMORY_COUNTERS pmc{};
                     if (GetProcessMemoryInfo(hProc, &pmc, sizeof(pmc))) {
                         ProcessItem item;
                         item.pid = pe32.th32ProcessID;
                         item.name = pe32.szExeFile;
                         item.memoryBytes = pmc.WorkingSetSize;
                         item.memoryMB = static_cast<double>(pmc.WorkingSetSize) / (1024.0 * 1024.0);
-                        metrics.topProcesses.push_back(item);
+                        metrics.topProcesses.push_back(std::move(item));
                     }
                     CloseHandle(hProc);
                 }
@@ -260,7 +255,7 @@ void WindowsInteraction::SampleProcesses(SystemMetrics& metrics) {
         CloseHandle(hSnapshot);
     }
 
-    std::sort(metrics.topProcesses.begin(), metrics.topProcesses.end(), [](const ProcessItem& a, const ProcessItem& b) {
+    std::sort(metrics.topProcesses.begin(), metrics.topProcesses.end(), [](const ProcessItem& a, const ProcessItem& b) noexcept {
         return a.memoryBytes > b.memoryBytes;
     });
 
@@ -269,7 +264,7 @@ void WindowsInteraction::SampleProcesses(SystemMetrics& metrics) {
     }
 }
 
-bool WindowsInteraction::PollKeyInput(MonitorState& state) {
+bool WindowsInteraction::PollKeyInput(MonitorState& state) noexcept {
     if (!_kbhit()) {
         return false;
     }

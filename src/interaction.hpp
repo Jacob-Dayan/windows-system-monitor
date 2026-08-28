@@ -15,12 +15,11 @@
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #ifndef INTERACTION_HPP
 #define INTERACTION_HPP
 
 #include <chrono>
-
+#include <cstdint>
 #include "logic.hpp"
 
 class WindowsInteraction {
@@ -33,15 +32,15 @@ private:
 public:
     WindowsInteraction();
 
-    void InitConsoleSettings();
+    void InitConsoleSettings() noexcept;
     void SampleSystemMetrics(MonitorState& state);
-    void TriggerAudioBeep(int frequencyHz = 750, int durationMs = 200);
-    bool PollKeyInput(MonitorState& state);
+    void TriggerAudioBeep(int frequencyHz = 750, int durationMs = 200) noexcept;
+    [[nodiscard]] bool PollKeyInput(MonitorState& state) noexcept;
 
 private:
-    void SampleCPU(SystemMetrics& metrics);
-    void SampleRAM(SystemMetrics& metrics, MonitorState& state);
-    void SampleGPU(SystemMetrics& metrics);
+    void SampleCPU(SystemMetrics& metrics) noexcept;
+    void SampleRAM(SystemMetrics& metrics, MonitorState& state) noexcept;
+    void SampleGPU(SystemMetrics& metrics) noexcept;
     void SampleDrives(SystemMetrics& metrics);
     void SampleNetwork(SystemMetrics& metrics, double elapsedSec);
     void SampleProcesses(SystemMetrics& metrics);

@@ -15,15 +15,33 @@
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #ifndef LOGIC_HPP
 #define LOGIC_HPP
 
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <cstddef>
 
-// Drive Info structure
+enum class TabId : int {
+    Overview       = 1,
+    Hardware       = 2,
+    StorageNetwork = 3,
+    Processes      = 4
+};
+
+enum class UsageTier : int {
+    Normal   = 0,
+    Warning  = 1,
+    Critical = 2
+};
+
+[[nodiscard]] constexpr UsageTier GetUsageTier(double percent) noexcept {
+    if (percent >= 90.0) return UsageTier::Critical;
+    if (percent >= 75.0) return UsageTier::Warning;
+    return UsageTier::Normal;
+}
+
 struct DriveInfo {
     std::string name;
     std::string type;
@@ -33,7 +51,6 @@ struct DriveInfo {
     double usagePercent{0.0};
 };
 
-// Process Info structure
 struct ProcessItem {
     uint32_t pid{0};
     std::string name;
@@ -41,7 +58,6 @@ struct ProcessItem {
     double memoryMB{0.0};
 };
 
-// Network Interface info
 struct NetInfo {
     uint64_t rxBytes{0};
     uint64_t txBytes{0};
@@ -49,7 +65,6 @@ struct NetInfo {
     double txSpeed{0.0};
 };
 
-// GPU & VRAM info
 struct GPUInfo {
     std::string name{"N/A"};
     uint64_t vramTotalBytes{0};
@@ -58,53 +73,42 @@ struct GPUInfo {
     bool available{false};
 };
 
-// Main Data Container
 struct SystemMetrics {
-    // Host Info
     std::string hostname;
     int cpuCores{0};
     uint64_t uptimeSeconds{0};
 
-    // CPU
     double cpuLoad{0.0};
 
-    // RAM
     uint64_t ramTotalBytes{0};
     uint64_t ramAvailBytes{0};
     uint64_t ramUsedBytes{0};
     double ramLoadPercent{0.0};
     std::vector<double> ramHistory;
 
-    // Commit / Swap
     uint64_t pageTotalBytes{0};
     uint64_t pageAvailBytes{0};
     uint64_t pageUsedBytes{0};
     double pageLoadPercent{0.0};
 
-    // GPU & VRAM
     GPUInfo gpu;
-
-    // Network & Storage
     NetInfo net;
     std::vector<DriveInfo> drives;
-
-    // Top Processes
     std::vector<ProcessItem> topProcesses;
 };
 
-// Application State Controller
 class MonitorState {
 public:
     SystemMetrics metrics;
 
-    int activeTab{1}; // 1: Overview, 2: CPU/RAM/GPU, 3: Storage/Net, 4: Processes
+    int activeTab{static_cast<int>(TabId::Overview)};
     bool soundAlertEnabled{true};
     int alertThreshold{90};
     bool isPaused{false};
     int refreshIntervalMs{1000};
     bool running{true};
 
-    const size_t maxHistorySize{30};
+    static constexpr size_t maxHistorySize{30};
 
     MonitorState();
     void PushRamHistory(double load);

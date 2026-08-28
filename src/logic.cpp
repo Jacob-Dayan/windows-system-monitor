@@ -15,7 +15,6 @@
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "logic.hpp"
 
 MonitorState::MonitorState() {
@@ -23,8 +22,8 @@ MonitorState::MonitorState() {
 }
 
 void MonitorState::PushRamHistory(double load) {
-    metrics.ramHistory.push_back(load);
-    if (metrics.ramHistory.size() > maxHistorySize) {
+    if (metrics.ramHistory.size() >= maxHistorySize) {
         metrics.ramHistory.erase(metrics.ramHistory.begin());
     }
+    metrics.ramHistory.push_back(load);
 }

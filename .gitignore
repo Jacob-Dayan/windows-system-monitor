@@ -3,10 +3,19 @@
 *.o
 *.obj
 *.pdb
+*.d
+*.gch
+src/*.gch
 
 # Build & System directories
 .vs/
 bin/
 build/
+dist/
 .idea/
 .gemini/
+.vscode/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile.bak
