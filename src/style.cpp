@@ -1,16 +1,16 @@
-/* 
+/*
 	Copyright (C) 2026 Jacob Dayan
-	
+
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	GNU General Public License for more details.
-	
+
 	You should have received me a copy of the GNU General Public License
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
@@ -66,7 +66,7 @@ std::string TerminalStyle::FormatUptime(uint64_t totalSec) {
 std::string TerminalStyle::RenderProgressBar(double percent, int width) {
     const double clampedPercent = std::clamp(percent, 0.0, 100.0);
     const int filled = std::clamp(static_cast<int>(std::round((clampedPercent / 100.0) * width)), 0, width);
-    
+
     std::string_view color = "\033[32m";
     switch (GetUsageTier(clampedPercent)) {
         case UsageTier::Critical: color = "\033[31m"; break;
@@ -94,7 +94,7 @@ std::string TerminalStyle::RenderSparkline(const std::vector<double>& history, i
     for (size_t i = start; i < history.size(); ++i) {
         const double val = history[i];
         const int idx = std::clamp(static_cast<int>(std::floor((val / 100.0) * 7.99)), 0, 7);
-        
+
         switch (GetUsageTier(val)) {
             case UsageTier::Critical: res += "\033[31m"; break;
             case UsageTier::Warning:  res += "\033[33m"; break;
@@ -203,9 +203,9 @@ void TerminalStyle::RenderDashboard(const MonitorState& state) {
     std::ostringstream out;
 
     out << "\033[H";
-    out << "\033[1;37;44m  ====================== WINDOWS SYSTEM MONITOR ======================  \033[0m\n";
+    out << "\033[1;37;44m                         WINDOWS SYSTEM MONITOR                         \033[0m\n";
     out << "\033[90m Host: \033[1;36m" << m.hostname << " \033[90m| Cores: \033[1;36m" << m.cpuCores
-        << " \033[90m| Uptime: \033[1;36m" << FormatUptime(m.uptimeSeconds) 
+        << " \033[90m| Uptime: \033[1;36m" << FormatUptime(m.uptimeSeconds)
         << " \033[90m| Alert: " << (state.soundAlertEnabled ? "\033[1;32mON (>90%)\033[0m" : "\033[1;31mOFF\033[0m")
         << " \033[90m| Refresh: \033[1;33m" << state.refreshIntervalMs << "ms\033[0m\n";
 
