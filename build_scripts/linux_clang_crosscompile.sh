@@ -23,11 +23,11 @@ fi
 
 printf "${BOLD}${CYAN}==> Building %s with Clang++ (target: %s)...${RESET}\n" "${TARGET}" "${CLANG_TARGET}"
 
-clang++ -std=c++20 -O3 -Wall -Wextra \
+clang++ -std=c++20 -O3 -Wall -Wextra -Wpedantic -DNDEBUG \
     --target="${CLANG_TARGET}" \
     src/main.cpp src/logic.cpp src/interaction.cpp src/style.cpp \
     -o "${TARGET}" \
-    -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid -lole32
+    -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid -lole32 "$@"
 
 rm -f *.obj src/*.gch 2>/dev/null || true
 

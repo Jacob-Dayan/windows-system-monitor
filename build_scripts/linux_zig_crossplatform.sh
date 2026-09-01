@@ -23,11 +23,11 @@ fi
 
 printf "${BOLD}${CYAN}==> Building %s with Zig C++ (target: %s)...${RESET}\n" "${TARGET}" "${ZIG_TARGET}"
 
-zig c++ -std=c++20 -O3 -Wall -Wextra \
+zig c++ -std=c++20 -O3 -Wall -Wextra -Wpedantic -DNDEBUG \
     -target "${ZIG_TARGET}" \
     src/main.cpp src/logic.cpp src/interaction.cpp src/style.cpp \
     -o "${TARGET}" \
-    -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid -lole32
+    -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid -lole32 "$@"
 
 rm -f *.obj src/*.gch 2>/dev/null || true
 
