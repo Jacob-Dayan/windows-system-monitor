@@ -16,6 +16,7 @@
 */
 
 #include "style.hpp"
+#include "consts.hpp"
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -67,10 +68,10 @@ std::string TerminalStyle::RenderProgressBar(double percent, int width) {
     const double clampedPercent = std::clamp(percent, 0.0, 100.0);
     const int filled = std::clamp(static_cast<int>(std::round((clampedPercent / 100.0) * width)), 0, width);
 
-    std::string_view color = "\033[32m";
+    std::string_view color = Ansi::Green;
     switch (GetUsageTier(clampedPercent)) {
-        case UsageTier::Critical: color = "\033[31m"; break;
-        case UsageTier::Warning:  color = "\033[33m"; break;
+        case UsageTier::Critical: color = Ansi::Red; break;
+        case UsageTier::Warning:  color = Ansi::Yellow; break;
         case UsageTier::Normal:   break;
     }
 
@@ -80,7 +81,8 @@ std::string TerminalStyle::RenderProgressBar(double percent, int width) {
         if (i < filled) bar += "█";
         else bar += "░";
     }
-    bar += "\033[0m]";
+    bar += Ansi::Reset;
+    bar += "]";
     return bar;
 }
 
@@ -96,50 +98,50 @@ std::string TerminalStyle::RenderSparkline(const std::vector<double>& history, i
         const int idx = std::clamp(static_cast<int>(std::floor((val / 100.0) * 7.99)), 0, 7);
 
         switch (GetUsageTier(val)) {
-            case UsageTier::Critical: res += "\033[31m"; break;
-            case UsageTier::Warning:  res += "\033[33m"; break;
-            case UsageTier::Normal:   res += "\033[36m"; break;
+            case UsageTier::Critical: res += Ansi::Red; break;
+            case UsageTier::Warning:  res += Ansi::Yellow; break;
+            case UsageTier::Normal:   res += Ansi::Cyan; break;
         }
 
         res += blocks[idx];
     }
-    res += "\033[0m";
+    res += Ansi::Reset;
     return res;
 }
 
 void TerminalStyle::RenderOverviewTab(std::ostream& out, const MonitorState& state) {
     const SystemMetrics& m = state.metrics;
-    out << "\033[1;35m[ SYSTEM OVERVIEW ]\033[0m\n\n";
+    out << Ansi::BoldMagenta << "[ SYSTEM OVERVIEW ]" << Ansi::Reset << "\n\n";
 
     out << " CPU Load:        " << RenderProgressBar(m.cpuLoad, 30)
         << " " << std::fixed << std::setprecision(1) << std::setw(5) << m.cpuLoad << "%\n";
 
     out << " RAM Load:        " << RenderProgressBar(m.ramLoadPercent, 30)
         << " " << std::fixed << std::setprecision(1) << std::setw(5) << m.ramLoadPercent << "%\n";
-    out << "                  \033[90mUsed: " << FormatBytes(m.ramUsedBytes) << " / Total: " << FormatBytes(m.ramTotalBytes) << "\033[0m\n";
+    out << "                  " << Ansi::Gray << "Used: " << FormatBytes(m.ramUsedBytes) << " / Total: " << FormatBytes(m.ramTotalBytes) << Ansi::Reset << "\n";
     out << " RAM History:     [" << RenderSparkline(m.ramHistory, 32) << "]\n\n";
 
     if (m.gpu.available) {
         out << " GPU (" << m.gpu.name.substr(0, 24) << ")\n";
         out << " VRAM Load:       " << RenderProgressBar(m.gpu.vramUsagePercent, 30)
             << " " << std::fixed << std::setprecision(1) << std::setw(5) << m.gpu.vramUsagePercent << "%\n";
-        out << "                  \033[90mUsed: " << FormatBytes(m.gpu.vramUsedBytes) << " / Total: " << FormatBytes(m.gpu.vramTotalBytes) << "\033[0m\n\n";
+        out << "                  " << Ansi::Gray << "Used: " << FormatBytes(m.gpu.vramUsedBytes) << " / Total: " << FormatBytes(m.gpu.vramTotalBytes) << Ansi::Reset << "\n\n";
     }
 
-    out << " Network Traffic: \033[32m▲ Upload: " << std::left << std::setw(10) << FormatSpeed(m.net.txSpeed)
-        << "\033[36m▼ Download: " << std::left << std::setw(10) << FormatSpeed(m.net.rxSpeed) << "\033[0m\n\n";
+    out << " Network Traffic: " << Ansi::Green << "▲ Upload: " << std::left << std::setw(10) << FormatSpeed(m.net.txSpeed)
+        << Ansi::Cyan << "▼ Download: " << std::left << std::setw(10) << FormatSpeed(m.net.rxSpeed) << Ansi::Reset << "\n\n";
 
-    out << "\033[1;33m[ STORAGE SUMMARY ]\033[0m\n";
+    out << Ansi::BoldYellow << "[ STORAGE SUMMARY ]" << Ansi::Reset << "\n";
     for (const auto& d : m.drives) {
         out << " Drive " << std::left << std::setw(4) << d.name << RenderProgressBar(d.usagePercent, 20)
             << " " << std::right << std::setw(5) << std::fixed << std::setprecision(1) << d.usagePercent << "% "
-            << "\033[90m(" << FormatBytes(d.usedBytes) << " / " << FormatBytes(d.totalBytes) << ")\033[0m\n";
+            << Ansi::Gray << "(" << FormatBytes(d.usedBytes) << " / " << FormatBytes(d.totalBytes) << ")" << Ansi::Reset << "\n";
     }
 }
 
 void TerminalStyle::RenderHardwareTab(std::ostream& out, const MonitorState& state) {
     const SystemMetrics& m = state.metrics;
-    out << "\033[1;35m[ HARDWARE METRICS: CPU / RAM / GPU ]\033[0m\n\n";
+    out << Ansi::BoldMagenta << "[ HARDWARE METRICS: CPU / RAM / GPU ]" << Ansi::Reset << "\n\n";
 
     out << " --- Processor (CPU) ---\n";
     out << " Logical Cores:   " << m.cpuCores << "\n";
@@ -164,10 +166,10 @@ void TerminalStyle::RenderHardwareTab(std::ostream& out, const MonitorState& sta
 
 void TerminalStyle::RenderStorageNetworkTab(std::ostream& out, const MonitorState& state) {
     const SystemMetrics& m = state.metrics;
-    out << "\033[1;35m[ STORAGE DISKS & NETWORK INTERFACES ]\033[0m\n\n";
+    out << Ansi::BoldMagenta << "[ STORAGE DISKS & NETWORK INTERFACES ]" << Ansi::Reset << "\n\n";
 
-    out << "\033[1mDrive Letter  Type          Total        Free         Used         Usage Bar\033[0m\n";
-    out << "\033[90m--------------------------------------------------------------------------------\033[0m\n";
+    out << Ansi::Bold << "Drive Letter  Type          Total        Free         Used         Usage Bar" << Ansi::Reset << "\n";
+    out << Ansi::Gray << "--------------------------------------------------------------------------------" << Ansi::Reset << "\n";
     for (const auto& d : m.drives) {
         out << " " << std::left << std::setw(13) << d.name
             << std::setw(14) << d.type
@@ -177,19 +179,19 @@ void TerminalStyle::RenderStorageNetworkTab(std::ostream& out, const MonitorStat
             << RenderProgressBar(d.usagePercent, 12) << "\n";
     }
 
-    out << "\n\033[1;35m[ REAL-TIME NETWORK MONITOR ]\033[0m\n\n";
-    out << " Download Speed (Rx): \033[1;36m▼ " << FormatSpeed(m.net.rxSpeed) << "\033[0m\n";
-    out << " Upload Speed (Tx):   \033[1;32m▲ " << FormatSpeed(m.net.txSpeed) << "\033[0m\n";
+    out << "\n" << Ansi::BoldMagenta << "[ REAL-TIME NETWORK MONITOR ]" << Ansi::Reset << "\n\n";
+    out << " Download Speed (Rx): " << Ansi::BoldCyan << "▼ " << FormatSpeed(m.net.rxSpeed) << Ansi::Reset << "\n";
+    out << " Upload Speed (Tx):   " << Ansi::BoldGreen << "▲ " << FormatSpeed(m.net.txSpeed) << Ansi::Reset << "\n";
     out << " Total Data Received: " << FormatBytes(m.net.rxBytes) << "\n";
     out << " Total Data Sent:     " << FormatBytes(m.net.txBytes) << "\n";
 }
 
 void TerminalStyle::RenderProcessesTab(std::ostream& out, const MonitorState& state) {
     const SystemMetrics& m = state.metrics;
-    out << "\033[1;35m[ TOP 15 PROCESSES BY MEMORY FOOTPRINT ]\033[0m\n\n";
+    out << Ansi::BoldMagenta << "[ TOP 15 PROCESSES BY MEMORY FOOTPRINT ]" << Ansi::Reset << "\n\n";
 
-    out << "\033[1mPID        Process Name                    Memory Usage (Working Set)\033[0m\n";
-    out << "\033[90m--------------------------------------------------------------------------------\033[0m\n";
+    out << Ansi::Bold << "PID        Process Name                    Memory Usage (Working Set)" << Ansi::Reset << "\n";
+    out << Ansi::Gray << "--------------------------------------------------------------------------------" << Ansi::Reset << "\n";
     for (const auto& proc : m.topProcesses) {
         out << " " << std::left << std::setw(10) << proc.pid
             << std::setw(32) << proc.name.substr(0, 30)
@@ -202,19 +204,25 @@ void TerminalStyle::RenderDashboard(const MonitorState& state) {
     const SystemMetrics& m = state.metrics;
     std::ostringstream out;
 
-    out << "\033[H";
-    out << "\033[1;37;44m                         WINDOWS SYSTEM MONITOR                         \033[0m\n";
-    out << "\033[90m Host: \033[1;36m" << m.hostname << " \033[90m| Cores: \033[1;36m" << m.cpuCores
-        << " \033[90m| Uptime: \033[1;36m" << FormatUptime(m.uptimeSeconds)
-        << " \033[90m| Alert: " << (state.soundAlertEnabled ? "\033[1;32mON (>90%)\033[0m" : "\033[1;31mOFF\033[0m")
-        << " \033[90m| Refresh: \033[1;33m" << state.refreshIntervalMs << "ms\033[0m\n";
+    out << Ansi::CursorHome;
+    out << Ansi::HeaderBanner << "                         WINDOWS SYSTEM MONITOR                         " << Ansi::Reset << "\n";
+    out << Ansi::Gray << " Host: " << Ansi::BoldCyan << m.hostname << " " << Ansi::Gray << "| Cores: " << Ansi::BoldCyan << m.cpuCores
+        << " " << Ansi::Gray << "| Uptime: " << Ansi::BoldCyan << FormatUptime(m.uptimeSeconds)
+        << " " << Ansi::Gray << "| Alert: ";
+    if (state.soundAlertEnabled) {
+        out << Ansi::BoldGreen << "ON (>90%)";
+    } else {
+        out << Ansi::BoldRed << "OFF";
+    }
+    out << Ansi::Reset
+        << " " << Ansi::Gray << "| Refresh: " << Ansi::BoldYellow << state.refreshIntervalMs << "ms" << Ansi::Reset << "\n";
 
-    out << "\n\033[1mTabs: ";
-    out << (state.activeTab == static_cast<int>(TabId::Overview) ? "\033[1;37;42m [1] Overview \033[0m" : "\033[90m [1] Overview \033[0m");
-    out << (state.activeTab == static_cast<int>(TabId::Hardware) ? "\033[1;37;42m [2] CPU / RAM / GPU \033[0m" : "\033[90m [2] CPU / RAM / GPU \033[0m");
-    out << (state.activeTab == static_cast<int>(TabId::StorageNetwork) ? "\033[1;37;42m [3] Storage / Net \033[0m" : "\033[90m [3] Storage / Net \033[0m");
-    out << (state.activeTab == static_cast<int>(TabId::Processes) ? "\033[1;37;42m [4] Top Processes \033[0m" : "\033[90m [4] Top Processes \033[0m");
-    out << "\n\033[90m--------------------------------------------------------------------------------\033[0m\n";
+    out << "\n" << Ansi::Bold << "Tabs: " << Ansi::Reset;
+    out << (state.activeTab == static_cast<int>(TabId::Overview) ? Ansi::TabActive : Ansi::Gray) << " [1] Overview " << Ansi::Reset;
+    out << (state.activeTab == static_cast<int>(TabId::Hardware) ? Ansi::TabActive : Ansi::Gray) << " [2] CPU / RAM / GPU " << Ansi::Reset;
+    out << (state.activeTab == static_cast<int>(TabId::StorageNetwork) ? Ansi::TabActive : Ansi::Gray) << " [3] Storage / Net " << Ansi::Reset;
+    out << (state.activeTab == static_cast<int>(TabId::Processes) ? Ansi::TabActive : Ansi::Gray) << " [4] Top Processes " << Ansi::Reset;
+    out << "\n" << Ansi::Gray << "--------------------------------------------------------------------------------" << Ansi::Reset << "\n";
 
     switch (static_cast<TabId>(state.activeTab)) {
         case TabId::Overview:
@@ -233,9 +241,9 @@ void TerminalStyle::RenderDashboard(const MonitorState& state) {
             break;
     }
 
-    out << "\n\033[90m--------------------------------------------------------------------------------\033[0m\n";
-    out << "\033[1;37;40m Hotkeys: [Tab/1-4] Switch Tab | [A] Toggle Audio Alert | [P] Pause | [+/-] Refresh Speed | [Q] Quit \033[0m\n";
-    out << "\033[K";
+    out << "\n" << Ansi::Gray << "--------------------------------------------------------------------------------" << Ansi::Reset << "\n";
+    out << Ansi::HotkeysBar << " Hotkeys: [Tab/1-4] Switch Tab | [A] Toggle Audio Alert | [P] Pause | [+/-] Refresh Speed | [Q] Quit " << Ansi::Reset << "\n";
+    out << Ansi::ClearLine;
 
     std::cout << out.str() << std::flush;
 }

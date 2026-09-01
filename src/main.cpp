@@ -22,13 +22,14 @@
 #include "logic.hpp"
 #include "interaction.hpp"
 #include "style.hpp"
+#include "consts.hpp"
 
 int main() {
     MonitorState state;
     WindowsInteraction winApi;
 
     winApi.InitConsoleSettings();
-    std::cout << "\033[2J\033[H" << std::flush;
+    std::cout << Ansi::ClearAll << std::flush;
     winApi.SampleSystemMetrics(state);
 
     while (state.running) {
@@ -42,6 +43,6 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(state.refreshIntervalMs));
     }
 
-    std::cout << "\033[2J\033[HExiting System Monitor.\n";
+    std::cout << Ansi::ClearAll << "Exiting System Monitor.\n";
     return 0;
 }
