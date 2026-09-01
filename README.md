@@ -44,7 +44,7 @@ make CXX=x86_64-w64-mingw32-g++
 
 ### Build Scripts
 
-> **Note**: The recommended tool for Unix cross-compilation are the [Zig toolchain](https://ziglang.org/download/) which you can install from [zig's official website](https://ziglang.org/download/), or using your package manager (homebrew, apt, winget, scoop, snap, pacman, and even pip(!))
+> **Note**: The recommended tool for Unix cross-compilation is the [Zig toolchain](https://ziglang.org/download/) which you can install from [zig's official website](https://ziglang.org/download/), or using your package manager (homebrew, apt, winget, scoop, snap, pacman, and even pip(!))
 
 
 Scripts are organized under `build_scripts/static/` and `build_scripts/dynamic/`:
