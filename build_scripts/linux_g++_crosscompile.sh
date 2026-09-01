@@ -12,7 +12,7 @@ CYAN=$'\033[36m'
 GREEN=$'\033[32m'
 RED=$'\033[31m'
 
-TARGET="system_monitor.exe"
+TARGET="monitor.exe"
 COMPILER=""
 
 if command -v x86_64-w64-mingw32-g++ &>/dev/null; then

@@ -12,7 +12,7 @@ CYAN=$'\033[36m'
 GREEN=$'\033[32m'
 RED=$'\033[31m'
 
-TARGET="system_monitor.exe"
+TARGET="monitor.exe"
 ZIG_TARGET="${ZIG_TARGET:-x86_64-windows-gnu}"
 
 if ! command -v zig &>/dev/null; then

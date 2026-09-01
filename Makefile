@@ -1,6 +1,6 @@
 # Windows System Monitor - Universal Cross-Platform Makefile
 
-TARGET      ?= system_monitor.exe
+TARGET      ?= monitor.exe
 BUILD_DIR   ?= build/obj
 BIN_DIR     ?= .
 
