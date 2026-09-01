@@ -1,19 +1,13 @@
 # Windows System Monitor
 
-A lightweight, real-time terminal system monitor for Windows written in modern C++20.
+A lightweight terminal system monitor for Windows written in C++20.
 
-Renders CPU, memory, GPU/VRAM, disk, network, and process metrics in an ANSI dashboard with double-buffering.
-
-![Version](https://img.shields.io/badge/version-0.1.2-blue.svg)
-![Language](https://img.shields.io/badge/Language-C%2B%2B20-blue.svg)
-![Compilers](https://img.shields.io/badge/Compilers-GCC%20%7C%20Clang%20%7C%20Zig-green.svg)
-![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20x64-0078D6.svg)
-![License](https://img.shields.io/badge/License-GPL_v3_or_later-blue.svg)
+Displays real-time CPU, RAM, GPU/VRAM, disk, network, and process metrics in an ANSI terminal dashboard.
 
 ## Features
 
-- **CPU**: Usage percentage via `GetSystemTimes` and core count.
-- **RAM & Swap**: Physical memory and pagefile usage with live sparkline history.
+- **CPU**: Usage percentage and core count.
+- **RAM & Swap**: Physical memory and pagefile usage with history graph.
 - **GPU**: Dedicated VRAM metrics via DirectX DXGI.
 - **Storage**: Logical drive capacity and usage bars.
 - **Network**: Real-time throughput (Rx/Tx) via IP Helper API.
@@ -32,42 +26,45 @@ Renders CPU, memory, GPU/VRAM, disk, network, and process metrics in an ANSI das
 
 ## Building
 
-The build system automatically detects available compilers (MinGW-w64, Zig C++, Clang, or native GCC).
-
-### Using Make
+### Make
 
 ```bash
-# Auto-detects toolchain (MinGW-w64, Zig, Clang, or GCC)
+# Static build (default)
 make
+
+# Dynamic build
+make STATIC=0
 
 # Debug build
 make debug
 
-# Pass custom compiler or Zig target
+# Custom compiler
 make CXX=x86_64-w64-mingw32-g++
-make CXX=zig ZIG_TARGET=x86_64-windows-gnu
-
-# Clean
-make clean
 ```
 
-### Using Build Scripts
+### Build Scripts
 
-On Linux / WSL:
-```bash
-./build.sh          # Auto-detect compiler
-./build.sh --zig    # Build using Zig C++
-./build.sh --debug  # Build with debug symbols
-```
+Scripts are organized under `build_scripts/static/` and `build_scripts/dynamic/`:
 
-On Windows:
-```cmd
-build.bat           # Auto-detect compiler
-build.bat zig       # Build using Zig C++
-build.bat debug     # Build with debug symbols
-```
+- **Static builds:**
+  - `build_scripts/static/linux_g++_crosscompile.sh`
+  - `build_scripts/static/linux_clang_crosscompile.sh`
+  - `build_scripts/static/linux_zig_crosscompile.sh`
+  - `build_scripts/static/windows_g++.bat`
+  - `build_scripts/static/windows_clang.bat`
+  - `build_scripts/static/windows_zig.bat`
+  - `build_scripts/static/windows_cl_visualstudio.ps1`
 
-### Using CMake
+- **Dynamic builds:**
+  - `build_scripts/dynamic/linux_g++_crosscompile.sh`
+  - `build_scripts/dynamic/linux_clang_crosscompile.sh`
+  - `build_scripts/dynamic/linux_zig_crosscompile.sh`
+  - `build_scripts/dynamic/windows_g++.bat`
+  - `build_scripts/dynamic/windows_clang.bat`
+  - `build_scripts/dynamic/windows_zig.bat`
+  - `build_scripts/dynamic/windows_cl_visualstudio.ps1`
+
+### CMake
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release

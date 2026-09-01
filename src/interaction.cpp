@@ -11,7 +11,7 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	GNU General Public License for more details.
 
-	You should have received me a copy of the GNU General Public License
+	You should have received a copy of the GNU General Public License
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
@@ -21,7 +21,6 @@
 #ifndef WINVER
 #define WINVER 0x0A00
 #endif
-#define _GLIBCXX_PRINT_NEVER_UNICODE
 
 #include <winsock2.h>
 #include <windows.h>
