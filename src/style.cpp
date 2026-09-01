@@ -205,7 +205,7 @@ void TerminalStyle::RenderDashboard(const MonitorState& state) {
     std::ostringstream out;
 
     out << Ansi::CursorHome;
-    out << Ansi::HeaderBanner << "                         WINDOWS SYSTEM MONITOR                         " << Ansi::Reset << "\n";
+    out << Ansi::HeaderBanner << "                     WINDOWS SYSTEM MONITOR v" << App::Version << "                      " << Ansi::Reset << "\n";
     out << Ansi::Gray << " Host: " << Ansi::BoldCyan << m.hostname << " " << Ansi::Gray << "| Cores: " << Ansi::BoldCyan << m.cpuCores
         << " " << Ansi::Gray << "| Uptime: " << Ansi::BoldCyan << FormatUptime(m.uptimeSeconds)
         << " " << Ansi::Gray << "| Alert: ";

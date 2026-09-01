@@ -1,6 +1,7 @@
 # Windows System Monitor - Universal Cross-Platform Makefile
 
 TARGET      ?= monitor.exe
+VERSION     ?= 0.1.2
 BUILD_DIR   ?= build/obj
 BIN_DIR     ?= .
 
@@ -182,6 +183,7 @@ endif
 
 info:
 	@printf "$(C_BOLD)Windows System Monitor - Build Information$(C_RESET)\n"
+	@printf "  $(C_CYAN)Version:$(C_RESET)          %s\n" "$(VERSION)"
 	@printf "  $(C_CYAN)Host OS:$(C_RESET)          %s\n" "$(HOST_OS)"
 	@printf "  $(C_CYAN)Toolchain:$(C_RESET)        %s\n" "$(TOOLCHAIN)"
 	@printf "  $(C_CYAN)Compiler (CXX):$(C_RESET)  %s\n" "$(CXX)"

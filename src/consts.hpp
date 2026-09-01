@@ -18,6 +18,11 @@
 #ifndef CONSTS_HPP
 #define CONSTS_HPP
 
+namespace App {
+    inline constexpr const char Name[]    = "Windows System Monitor";
+    inline constexpr const char Version[] = "0.1.2";
+}
+
 namespace Ansi {
     inline constexpr const char Reset[]        = "\033[0m";
     inline constexpr const char Bold[]         = "\033[1m";

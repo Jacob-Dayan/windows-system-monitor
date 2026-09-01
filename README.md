@@ -4,6 +4,7 @@ A lightweight, real-time terminal system monitor for Windows written in modern C
 
 Renders CPU, memory, GPU/VRAM, disk, network, and process metrics in an ANSI dashboard with double-buffering.
 
+![Version](https://img.shields.io/badge/version-0.1.2-blue.svg)
 ![Language](https://img.shields.io/badge/Language-C%2B%2B20-blue.svg)
 ![Compilers](https://img.shields.io/badge/Compilers-GCC%20%7C%20Clang%20%7C%20Zig-green.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20x64-0078D6.svg)
@@ -76,7 +77,7 @@ cmake --build build
 ## Running
 
 ```cmd
-system_monitor.exe
+monitor.exe
 ```
 
 ## License
