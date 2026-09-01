@@ -74,7 +74,7 @@ cmake --build build
 ## Running
 
 ```cmd
-monitor.exe
+./monitor.exe
 ```
 
 ## License
