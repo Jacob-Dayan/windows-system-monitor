@@ -8,6 +8,6 @@ Write-Host "Building monitor.exe (dynamic, cl)..."
 
 cl /nologo /std:c++20 /EHsc /MD /Ox /O2 /Ob3 /Oi /Ot /Oy /GF /Gy /Gw /GL /GR- /permissive- /DNDEBUG `
    /Fo:"build\" /Fe:"monitor.exe" `
-   src/main.cpp src/logic.cpp src/interaction.cpp src/style.cpp `
+   (Get-ChildItem src/*.cpp) `
    /link /nologo /LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO `
    dxgi.lib iphlpapi.lib psapi.lib ws2_32.lib ole32.lib
