@@ -18,13 +18,22 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <string_view>
 
 #include "logic.hpp"
 #include "interaction.hpp"
 #include "style.hpp"
 #include "consts.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
+    for (int i = 1; i < argc; ++i) {
+        std::string_view arg{argv[i]};
+        if (arg == "-V" || arg == "--version") {
+            std::cout << App::Name << " v" << App::Version << "\n";
+            return 0;
+        }
+    }
+
     MonitorState state;
     WindowsInteraction winApi;
 
