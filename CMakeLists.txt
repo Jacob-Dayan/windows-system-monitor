@@ -24,11 +24,11 @@ add_executable(system_monitor
 
 target_compile_options(system_monitor PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
-        -Wall -Wextra -Wpedantic -O3 -ffunction-sections -fdata-sections
-        -fno-rtti -fomit-frame-pointer -fmerge-all-constants -DNDEBUG
+        -Wall -Wextra -Wpedantic -O3 -pipe -funroll-loops -fstrict-aliasing -ffast-math -finline-functions
+        -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fomit-frame-pointer -fmerge-all-constants -fno-ident -DNDEBUG
     >
     $<$<CXX_COMPILER_ID:MSVC>:
-        /W4 /O2 /Ox /Ob3 /Oi /Ot /Oy /GF /Gy /Gw /GL /GR- /permissive- /DNDEBUG
+        /W4 /O2 /Ox /Ob3 /Oi /Ot /Oy /GF /Gy /Gw /GL /GR- /permissive- /fp:fast /MP /D_HAS_EXCEPTIONS=0 /EHs-c- /DNDEBUG
         $<$<BOOL:${BUILD_STATIC}>:/MT>
         $<$<NOT:$<BOOL:${BUILD_STATIC}>>:/MD>
     >

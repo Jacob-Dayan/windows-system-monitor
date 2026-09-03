@@ -64,13 +64,16 @@ else
     endif
 endif
 
-BASE_CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic -MMD -MP
+BASE_CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic -MMD -MP -pipe
 LIBS          := -lpsapi -liphlpapi -lws2_32 -ldxgi -ldxguid -lole32
 
 ifeq ($(DEBUG),1)
     CXXFLAGS := $(BASE_CXXFLAGS) -g -O0 -DDEBUG
 else
-    CXXFLAGS := $(BASE_CXXFLAGS) -O3 -flto=auto -fno-fat-lto-objects -ffunction-sections -fdata-sections -fno-rtti -fomit-frame-pointer -fmerge-all-constants -DNDEBUG
+    CXXFLAGS := $(BASE_CXXFLAGS) -O3 -flto=auto -fno-fat-lto-objects \
+                -funroll-loops -fstrict-aliasing -ffast-math -finline-functions \
+                -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
+                -fomit-frame-pointer -fmerge-all-constants -fno-ident -DNDEBUG
     LDFLAGS  += -Wl,--gc-sections -Wl,--strip-all -s
 endif
 
