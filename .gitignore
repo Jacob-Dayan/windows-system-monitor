@@ -12,6 +12,7 @@ src/*.gch
 bin/
 build/
 dist/
+[Dd]ebug/
 .idea/
 .gemini/
 .antigravity
