@@ -24,15 +24,29 @@ add_executable(system_monitor
 
 target_compile_options(system_monitor PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
-        -Wall -Wextra -Wpedantic -O3 -pipe -funroll-loops -fstrict-aliasing -ffast-math -finline-functions
-        -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fomit-frame-pointer -fmerge-all-constants -fno-ident -DNDEBUG
+        -Wall -Wextra -Wpedantic -pipe -funroll-loops -fstrict-aliasing -ffast-math -finline-functions
+        -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fomit-frame-pointer -fmerge-all-constants -fno-ident
+        $<$<CONFIG:Release>:-O3 -DNDEBUG>
     >
     $<$<CXX_COMPILER_ID:MSVC>:
-        /W4 /O2 /Ox /Ob3 /Oi /Ot /Oy /GF /Gy /Gw /GL /GR- /permissive- /fp:fast /MP /D_HAS_EXCEPTIONS=0 /EHs-c- /DNDEBUG
-        $<$<BOOL:${BUILD_STATIC}>:/MT>
-        $<$<NOT:$<BOOL:${BUILD_STATIC}>>:/MD>
+        /W4 /permissive- /MP /GR- /fp:fast /D_HAS_EXCEPTIONS=0 /EHs-c-
+        $<$<CONFIG:Release>:
+            /O2 /Ob3 /Oi /Ot /Oy /GF /Gy /Gw /GL /DNDEBUG
+        >
     >
 )
+
+if(MSVC)
+    if(BUILD_STATIC)
+        set_property(TARGET system_monitor PROPERTY
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+        )
+    else()
+        set_property(TARGET system_monitor PROPERTY
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
+        )
+    endif()
+endif()
 
 target_link_libraries(system_monitor PRIVATE
     psapi
@@ -53,9 +67,6 @@ if(MINGW OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STR
     )
 elseif(MSVC)
     target_link_options(system_monitor PRIVATE
-        /LTCG
-        /OPT:REF
-        /OPT:ICF
-        /INCREMENTAL:NO
+        $<$<CONFIG:Release>:/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO>
     )
 endif()
